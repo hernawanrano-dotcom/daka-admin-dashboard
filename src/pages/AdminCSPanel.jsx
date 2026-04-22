@@ -1,27 +1,26 @@
 ﻿// apps/admin-dashboard/src/pages/AdminCSPanel.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useOrders } from '../hooks/useOrders';
 import { chatAPI } from '../services/api';
 import io from 'socket.io-client';
-import LoginForm from '../components/admincs/LoginForm';
 import ChatList from '../components/admincs/ChatList';
 import ChatConversation from '../components/admincs/ChatConversation';
 import OrderTable from '../components/admincs/OrderTable';
 import OrderModal from '../components/admincs/OrderModal';
 
 // Socket connection
-const SOCKET_URL = 'https://zippy-commitment.up.railway.app';
+const SOCKET_URL = 'https://zippy-commitment-production-dfeb.up.railway.app';
 let socket;
 
 export default function AdminCSPanel() {
-  const { isLoggedIn, adminName, login, logout, loading: authLoading } = useAuth();
+  const { isLoggedIn, adminName, logout, loading: authLoading } = useAuth();
   const { orders, customers, chats, loadAllData, updateOrderStatus } = useOrders();
   const [currentCustomerId, setCurrentCustomerId] = useState(null);
   const [currentOrderTab, setCurrentOrderTab] = useState('today');
   const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0]);
   const [modalState, setModalState] = useState({ isOpen: false, type: null, order: null });
-  const [loginError, setLoginError] = useState('');
   const [unreadCounts, setUnreadCounts] = useState({});
   const [liveChats, setLiveChats] = useState(chats);
   const [typingCustomers, setTypingCustomers] = useState({});
@@ -50,7 +49,6 @@ export default function AdminCSPanel() {
           timestamp: new Date().toISOString()
         }]);
         
-        // Update unread count if not currently viewing this customer
         if (currentCustomerId !== data.customerId) {
           setUnreadCounts(prev => ({
             ...prev,
@@ -103,12 +101,6 @@ export default function AdminCSPanel() {
     }
   }, [liveChats, currentCustomerId]);
 
-  const handleLogin = (email, password) => {
-    const success = login(email, password);
-    if (!success) setLoginError('Login gagal!');
-    else setLoginError('');
-  };
-
   const handleLogout = () => {
     logout();
     setCurrentCustomerId(null);
@@ -121,13 +113,11 @@ export default function AdminCSPanel() {
   const handleSelectChat = useCallback(async (customerId) => {
     setCurrentCustomerId(customerId);
     
-    // Mark unread messages as read
     const unreadChats = liveChats.filter(c => c.customerId === customerId && c.sender === 'customer' && !c.read);
     for (const chat of unreadChats) {
       await chatAPI.markRead(chat.id);
     }
     
-    // Clear unread count for this customer
     setUnreadCounts(prev => ({
       ...prev,
       [customerId]: 0
@@ -229,8 +219,9 @@ export default function AdminCSPanel() {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
   }
 
+  // Jika belum login, redirect ke halaman login utama
   if (!isLoggedIn) {
-    return <LoginForm onLogin={handleLogin} error={loginError} />;
+    return <Navigate to="/login" replace />;
   }
 
   const filteredOrders = getFilteredOrders();
@@ -244,8 +235,8 @@ export default function AdminCSPanel() {
       <div className="header">
         <div className="logo"><h2>DAKA <span>Express</span></h2></div>
         <div className="admin-info">
-          <div className="avatar">{adminName.charAt(0)}</div>
-          <span>{adminName}</span>
+          <div className="avatar">{adminName?.charAt(0) || 'A'}</div>
+          <span>{adminName || 'Admin CS'}</span>
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
           <button className="dark-toggle" onClick={toggleDarkMode}><i className="fas fa-moon"></i></button>
         </div>
