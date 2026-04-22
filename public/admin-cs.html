@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin CS - Daka Express</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 20% 50%, #0a0f2a, #030614); color: white; height: 100vh; overflow: hidden; }
+        .top-bar { background: rgba(10,20,50,0.4); backdrop-filter: blur(10px); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,136,255,0.2); }
+        .logo h2 { font-size: 1.2rem; background: linear-gradient(135deg, #fff, #0088ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .three-columns { display: flex; height: calc(100vh - 60px); }
+        .col-chat-list { width: 30%; background: rgba(10,20,50,0.3); border-right: 1px solid rgba(0,136,255,0.2); display: flex; flex-direction: column; }
+        .col-chat-convo { width: 40%; display: flex; flex-direction: column; border-right: 1px solid rgba(0,136,255,0.2); }
+        .col-order { width: 30%; display: flex; flex-direction: column; }
+        .col-header { padding: 16px; border-bottom: 1px solid rgba(0,136,255,0.2); font-weight: 600; color: #0088ff; }
+        .chat-items { flex: 1; overflow-y: auto; }
+        .chat-item { padding: 14px 16px; border-bottom: 1px solid rgba(0,136,255,0.1); cursor: pointer; display: flex; justify-content: space-between; }
+        .chat-item:hover, .chat-item.active { background: rgba(0,136,255,0.15); }
+        .chat-name { font-weight: 600; }
+        .chat-lastmsg { font-size: 0.7rem; color: #a0b0d0; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 160px; }
+        .unread-badge { background: #0088ff; border-radius: 20px; padding: 2px 8px; font-size: 0.65rem; }
+        .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .message { display: flex; }
+        .message.customer { justify-content: flex-start; }
+        .message.admin { justify-content: flex-end; }
+        .message-bubble { max-width: 70%; padding: 10px 14px; border-radius: 18px; font-size: 0.8rem; }
+        .message.customer .message-bubble { background: #1a2a4a; border: 1px solid #2a3a5a; }
+        .message.admin .message-bubble { background: linear-gradient(135deg, #0088ff, #0055cc); }
+        .chat-input { padding: 16px; border-top: 1px solid rgba(0,136,255,0.2); display: flex; gap: 12px; }
+        .chat-input input { flex: 1; padding: 12px; background: #1a2040; border: none; border-radius: 30px; color: white; }
+        .chat-input button { padding: 12px 24px; background: #0088ff; border: none; border-radius: 30px; color: white; cursor: pointer; }
+        .order-table { flex: 1; overflow-y: auto; padding: 16px; }
+        table { width: 100%; font-size: 0.7rem; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid rgba(0,136,255,0.1); }
+        th { color: #0088ff; }
+        .status-badge { padding: 3px 8px; border-radius: 20px; font-size: 0.65rem; background: rgba(0,136,255,0.2); color: #0088ff; }
+        .btn-sm { padding: 4px 8px; background: #0088ff; border: none; border-radius: 6px; color: white; cursor: pointer; }
+        .logout-icon { cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.3s; }
+        .logout-icon:hover { background: rgba(255,68,68,0.2); color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="top-bar"><div class="logo"><h2>DAKA ⚡ Express</h2></div><div><i class="fas fa-sign-out-alt logout-icon" onclick="logout()"></i></div></div>
+    <div class="three-columns">
+        <div class="col-chat-list"><div class="col-header"><i class="fas fa-comments"></i> Chats</div><div class="chat-items" id="chatList"></div></div>
+        <div class="col-chat-convo"><div class="col-header" id="chatHeader">Pilih chat untuk mulai</div><div class="messages" id="messages"></div><div class="chat-input"><input type="text" id="messageInput" placeholder="Ketik pesan..."><button onclick="sendMessage()">Kirim</button></div></div>
+        <div class="col-order"><div class="col-header"><i class="fas fa-box"></i> Order Hari Ini</div><div class="order-table"><table><thead><tr><th>No Resi</th><th>Pengirim</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="orderTable"></tbody></table></div></div>
+    </div>
+    <script>
+        const user = JSON.parse(localStorage.getItem('daka_admin'));
+        if (!user || user.role !== 'admin_cs') window.location.href = 'login.html';
+        let chats = [{ id: 1, name: 'Budi Santoso', lastMsg: 'Halo, pesanan saya sudah sampai?', time: '10:30', unread: 2, messages: [{ text: 'Halo, pesanan saya sudah sampai?', sender: 'customer', time: '10:30' }] }];
+        let selectedChat = chats[0];
+        function renderChatList() { document.getElementById('chatList').innerHTML = chats.map(c => `<div class="chat-item ${selectedChat?.id === c.id ? 'active' : ''}" onclick="selectChat(${c.id})"><div><div class="chat-name">${c.name}</div><div class="chat-lastmsg">${c.lastMsg}</div></div><div>${c.unread ? `<div class="unread-badge">${c.unread}</div>` : ''}</div></div>`).join(''); }
+        function selectChat(id) { selectedChat = chats.find(c => c.id === id); document.getElementById('chatHeader').innerHTML = `<i class="fas fa-user"></i> ${selectedChat.name}`; renderMessages(); renderChatList(); }
+        function renderMessages() { document.getElementById('messages').innerHTML = selectedChat.messages.map(m => `<div class="message ${m.sender}"><div class="message-bubble">${m.text}<div class="message-time">${m.time}</div></div></div>`).join(''); }
+        function sendMessage() { const input = document.getElementById('messageInput'); if (!input.value.trim()) return; selectedChat.messages.push({ text: input.value, sender: 'admin', time: new Date().toLocaleTimeString() }); renderMessages(); input.value = ''; }
+        function renderOrders() { document.getElementById('orderTable').innerHTML = `<tr><td>DKA001</td><td>Budi</td><td><span class="status-badge">Diterima</span></td><td><button class="btn-sm">Jadwal</button></td></tr><tr><td>DKA002</td><td>Citra</td><td><span class="status-badge">Dijadwalkan</span></td><td><button class="btn-sm">Cancel</button></td></tr>`; }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        renderChatList(); renderMessages(); renderOrders();
+    </script>
+</body>
+</html>

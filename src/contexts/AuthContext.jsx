@@ -1,42 +1,12 @@
-// apps/admin-dashboard/src/contexts/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+﻿import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
-// Data user untuk demo
 const USERS = [
-  {
-    id: 1,
-    email: 'superadmin@daka.com',
-    password: 'super123',
-    name: 'Super Admin',
-    role: 'superadmin',
-    roleName: 'Super Admin',
-  },
-  {
-    id: 2,
-    email: 'admincs@daka.com',
-    password: 'cs123',
-    name: 'Admin CS',
-    role: 'admincs',
-    roleName: 'Admin CS',
-  },
-  {
-    id: 3,
-    email: 'adminkurir@daka.com',
-    password: 'kurir123',
-    name: 'Admin Kurir',
-    role: 'adminkurir',
-    roleName: 'Admin Kurir',
-  },
-  {
-    id: 4,
-    email: 'adminkeuangan@daka.com',
-    password: 'uang123',
-    name: 'Admin Keuangan',
-    role: 'adminkeuangan',
-    roleName: 'Admin Keuangan',
-  },
+  { id: 1, email: 'admincs@daka.com', password: 'admin123', name: 'Admin CS', role: 'admin_cs' },
+  { id: 2, email: 'superadmin@daka.com', password: 'admin123', name: 'Super Admin', role: 'superadmin' },
+  { id: 3, email: 'adminkurir@daka.com', password: 'admin123', name: 'Admin Kurir', role: 'admin_kurir' },
+  { id: 4, email: 'adminkeuangan@daka.com', password: 'admin123', name: 'Admin Keuangan', role: 'admin_keuangan' },
 ];
 
 export function AuthProvider({ children }) {
@@ -44,23 +14,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('daka_admin_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const saved = localStorage.getItem('daka_admin_user');
+    if (saved) {
+      setUser(JSON.parse(saved));
     }
     setLoading(false);
   }, []);
 
   const login = (email, password) => {
-    const foundUser = USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('daka_admin_user', JSON.stringify(userWithoutPassword));
-      return { success: true, user: userWithoutPassword };
+    console.log('========== LOGIN DEBUG ==========');
+    console.log('1. Email yang dimasukkan:', email);
+    console.log('2. Password yang dimasukkan:', password);
+    console.log('3. Panjang email:', email?.length);
+    console.log('4. Panjang password:', password?.length);
+    console.log('5. Daftar users di database:', USERS);
+    
+    const found = USERS.find(u => u.email === email && u.password === password);
+    
+    console.log('6. User yang ditemukan:', found);
+    
+    if (found) {
+      const { password: _, ...userData } = found;
+      setUser(userData);
+      localStorage.setItem('daka_admin_user', JSON.stringify(userData));
+      console.log('7. LOGIN BERHASIL! User:', userData);
+      return { success: true, user: userData };
     }
+    
+    console.log('7. LOGIN GAGAL! User tidak ditemukan');
     return { success: false, message: 'Email atau password salah!' };
   };
 
@@ -69,13 +50,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('daka_admin_user');
   };
 
-  const hasAccess = (allowedRoles) => {
-    if (!user) return false;
-    return allowedRoles.includes(user.role);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasAccess }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -83,8 +59,6 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Daka Express Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 20% 50%, #0a0f2a, #030614); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: rgba(26, 32, 64, 0.8); backdrop-filter: blur(10px); border-radius: 28px; padding: 48px; width: 100%; max-width: 450px; border: 1px solid rgba(0, 136, 255, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo h1 { font-size: 2rem; background: linear-gradient(135deg, #fff, #0088ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .logo p { color: #0088ff; font-size: 0.8rem; margin-top: 8px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #a0b0d0; font-size: 0.8rem; }
+        .input-group input { width: 100%; padding: 14px 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(0,136,255,0.3); border-radius: 16px; color: white; font-size: 1rem; font-family: inherit; transition: all 0.3s; }
+        .input-group input:focus { outline: none; border-color: #0088ff; box-shadow: 0 0 10px rgba(0,136,255,0.3); }
+        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg, #0088ff, #0055cc); border: none; border-radius: 16px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,136,255,0.3); }
+        .demo-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; }
+        .demo-btn { padding: 10px; background: rgba(0,136,255,0.15); border: 1px solid rgba(0,136,255,0.3); border-radius: 12px; color: #0088ff; cursor: pointer; font-size: 0.75rem; transition: all 0.3s; }
+        .demo-btn:hover { background: rgba(0,136,255,0.3); }
+        .error { color: #ff4444; text-align: center; margin-top: 12px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo"><h1>DAKA ⚡ Express</h1><p>Admin Portal</p></div>
+        <form id="loginForm">
+            <div class="input-group"><label>Email</label><input type="email" id="email" placeholder="admin@daka.com" autofocus></div>
+            <div class="input-group"><label>Password</label><input type="password" id="password" placeholder="••••••••"></div>
+            <div id="errorMsg" class="error"></div>
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+        <div class="demo-buttons">
+            <button class="demo-btn" onclick="demoLogin('superadmin@daka.com', 'admin123')">🔷 Super Admin</button>
+            <button class="demo-btn" onclick="demoLogin('admincs@daka.com', 'admin123')">💬 Admin CS</button>
+            <button class="demo-btn" onclick="demoLogin('adminkurir@daka.com', 'admin123')">🏍️ Admin Kurir</button>
+            <button class="demo-btn" onclick="demoLogin('adminkeuangan@daka.com', 'admin123')">💰 Admin Keuangan</button>
+        </div>
+    </div>
+    <script>
+        const USERS = {
+            'superadmin@daka.com': { role: 'superadmin', name: 'Super Admin', redirect: 'super-admin.html' },
+            'admincs@daka.com': { role: 'admin_cs', name: 'Admin CS', redirect: 'admin-cs.html' },
+            'adminkurir@daka.com': { role: 'admin_kurir', name: 'Admin Kurir', redirect: 'admin-kurir.html' },
+            'adminkeuangan@daka.com': { role: 'admin_keuangan', name: 'Admin Keuangan', redirect: 'admin-keuangan.html' }
+        };
+        function demoLogin(email, password) { document.getElementById('email').value = email; document.getElementById('password').value = password; document.getElementById('loginForm').dispatchEvent(new Event('submit')); }
+        document.getElementById('loginForm').addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('email').value.trim().toLowerCase(); const password = document.getElementById('password').value.trim(); const user = USERS[email]; if (user && password === 'admin123') { localStorage.setItem('daka_admin', JSON.stringify({ email, role: user.role, name: user.name })); window.location.href = user.redirect; } else { document.getElementById('errorMsg').innerText = 'Email atau password salah!'; } });
+        if (localStorage.getItem('daka_admin')) { const user = JSON.parse(localStorage.getItem('daka_admin')); const redirects = { superadmin: 'super-admin.html', admin_cs: 'admin-cs.html', admin_kurir: 'admin-kurir.html', admin_keuangan: 'admin-keuangan.html' }; if (redirects[user.role]) window.location.href = redirects[user.role]; }
+    </script>
+</body>
+</html>

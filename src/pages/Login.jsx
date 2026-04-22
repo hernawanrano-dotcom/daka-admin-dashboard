@@ -1,6 +1,4 @@
-// apps/admin-dashboard/src/pages/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+﻿import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
@@ -9,99 +7,67 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    const result = login(email, password);
+    
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    
+    console.log('Form submitted with:', { cleanEmail, cleanPassword });
+    
+    const result = await login(cleanEmail, cleanPassword);
     
     if (result.success) {
-      // Redirect berdasarkan role
-      if (result.user.role === 'superadmin') navigate('/super-admin');
-      else if (result.user.role === 'admincs') navigate('/admin-cs');
-      else if (result.user.role === 'adminkurir') navigate('/admin-kurir');
-      else if (result.user.role === 'adminkeuangan') navigate('/admin-keuangan');
+      window.location.href = '/admin-cs';
     } else {
       setError(result.message);
     }
     setLoading(false);
   };
 
-  const demoAccounts = [
-    { email: 'superadmin@daka.com', password: 'super123', role: 'Super Admin' },
-    { email: 'admincs@daka.com', password: 'cs123', role: 'Admin CS' },
-    { email: 'adminkurir@daka.com', password: 'kurir123', role: 'Admin Kurir' },
-    { email: 'adminkeuangan@daka.com', password: 'uang123', role: 'Admin Keuangan' },
-  ];
-
-  const fillDemo = (demoEmail, demoPassword) => {
+  const demoLogin = (demoEmail, demoPassword) => {
     setEmail(demoEmail);
     setPassword(demoPassword);
+    // Optional: langsung submit
+    setTimeout(() => {
+      const form = document.querySelector('form');
+      if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }, 100);
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card" style={{ maxWidth: '450px' }}>
-        <div className="logo">
-          <h1>DAKA <span>Express</span></h1>
-          <p>Admin Portal</p>
-        </div>
-        
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0a0f2a' }}>
+      <div style={{ background: '#1a2040', padding: 40, borderRadius: 20, width: 400 }}>
+        <h1 style={{ color: '#0088ff', textAlign: 'center' }}>DAKA Express</h1>
         <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Masukkan email"
-              required
-            />
-          </div>
-          <div className="input-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Masukkan password"
-              required
-            />
-          </div>
-          {error && <p style={{ color: 'red', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <input 
+            type="email" 
+            placeholder="Email" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            style={{ width: '100%', padding: 12, margin: '10px 0', borderRadius: 8, border: 'none' }} 
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            style={{ width: '100%', padding: 12, margin: '10px 0', borderRadius: 8, border: 'none' }} 
+          />
+          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+          <button type="submit" disabled={loading} style={{ width: '100%', padding: 12, background: '#0088ff', border: 'none', borderRadius: 8, color: 'white', marginTop: 10 }}>
             {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
-
-        <div style={{ marginTop: '24px' }}>
-          <p style={{ textAlign: 'center', marginBottom: '12px', fontSize: '0.8rem', color: '#64748b' }}>
-            Demo Akun (klik untuk login cepat):
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {demoAccounts.map((acc) => (
-              <button
-                key={acc.role}
-                type="button"
-                onClick={() => fillDemo(acc.email, acc.password)}
-                style={{
-                  padding: '8px 12px',
-                  background: '#f1f5f9',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '0.75rem',
-                  textAlign: 'left',
-                }}
-              >
-                <strong>{acc.role}</strong><br />
-                <span style={{ fontSize: '0.65rem', color: '#64748b' }}>{acc.email}</span>
-              </button>
-            ))}
-          </div>
+        
+        <div style={{ marginTop: 20 }}>
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#aaa' }}>Demo Login Cepat:</p>
+          <button onClick={() => demoLogin('admincs@daka.com', 'admin123')} style={{ width: '100%', padding: 8, margin: '5px 0', background: '#0088ff', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer' }}>Admin CS</button>
+          <button onClick={() => demoLogin('superadmin@daka.com', 'admin123')} style={{ width: '100%', padding: 8, margin: '5px 0', background: '#0088ff', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer' }}>Super Admin</button>
+          <button onClick={() => demoLogin('adminkurir@daka.com', 'admin123')} style={{ width: '100%', padding: 8, margin: '5px 0', background: '#0088ff', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer' }}>Admin Kurir</button>
         </div>
       </div>
     </div>
