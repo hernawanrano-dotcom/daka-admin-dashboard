@@ -4,7 +4,7 @@ import { useOrders } from '../hooks/useOrders';
 import { useStaff } from '../hooks/useStaff';
 import { useDashboard } from '../hooks/useDashboard';
 import Sidebar from '../components/superadmin/Sidebar';
-import FilterBar from '../components/superadmin/FilterBar';
+import Navbar from '../components/superadmin/Navbar';
 import StatsCards from '../components/superadmin/StatsCards';
 import RevenueChart from '../components/superadmin/RevenueChart';
 import OrdersChart from '../components/superadmin/OrdersChart';
@@ -36,6 +36,7 @@ export default function SuperAdmin() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(null);
+  const [selectedPeriod, setSelectedPeriod] = useState('day');
 
   useEffect(() => {
     loadAllData();
@@ -52,6 +53,16 @@ export default function SuperAdmin() {
   const topKurir = getTopKurir();
   const { thisMonth, lastMonth } = getComparisonData();
   const metrics = getMetrics(filteredOrders, stats);
+
+  const handlePeriodChange = (newPeriod) => {
+    setSelectedPeriod(newPeriod);
+    setPeriodFilter(newPeriod);
+  };
+
+  const handleCustomDate = (start, end) => {
+    setCustomDate(start, end);
+    setSelectedPeriod('custom');
+  };
 
   const handleExportExcel = () => {
     let csv = "No Resi,Tanggal,Status,Pengirim,Penerima,Alamat,Nilai\n";
@@ -74,57 +85,29 @@ export default function SuperAdmin() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const toggleDarkMode = () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('daka_darkmode', document.body.classList.contains('dark-mode'));
-  };
-
   useEffect(() => {
     if (localStorage.getItem('daka_darkmode') === 'true') {
       document.body.classList.add('dark-mode');
     }
   }, []);
 
-  const formatDate = () => {
-    return new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  };
-
   return (
     <div className="superadmin-container">
-      <button className="superadmin-menu-toggle" onClick={toggleSidebar}>
-        <i className="fas fa-bars"></i>
-      </button>
-
-      <Sidebar
-        isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
-      <div className="superadmin-main-content">
-        <div className="superadmin-top-bar">
-          <div className="page-title">
-            <h2>Super Admin</h2>
-            <p>Overview performa Daka Express</p>
-          </div>
-          <div className="header-right">
-            <div className="date-badge">{formatDate()}</div>
-            <button className="dark-toggle" onClick={toggleDarkMode}>
-              <i className="fas fa-moon"></i>
-            </button>
-          </div>
-        </div>
-
-        <div className="superadmin-main-container">
-          <FilterBar
-            period={period}
-            startDate={startDate}
-            endDate={endDate}
-            onPeriodChange={setPeriodFilter}
-            onCustomDate={setCustomDate}
-            onExportExcel={handleExportExcel}
-            onExportPDF={handleExportPDF}
-          />
-          
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      <div className="superadmin-main">
+        <Navbar 
+          onMenuClick={toggleSidebar} 
+          onExportExcel={handleExportExcel}
+          onExportPDF={handleExportPDF}
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={handlePeriodChange}
+          startDate={startDate}
+          endDate={endDate}
+          onCustomDate={handleCustomDate}
+        />
+        
+        <div className="superadmin-content">
           <StatsCards stats={stats} />
           
           <div className="superadmin-charts-grid">
@@ -136,22 +119,30 @@ export default function SuperAdmin() {
 
           <div className="superadmin-charts-grid">
             <div className="card">
-              <h3><i className="fas fa-trophy" style={{ color: '#F59E0B' }}></i> Top 10 Customer Teraktif</h3>
+              <div className="card-header">
+                <h3><i className="fas fa-trophy"></i> Top 10 Customer Teraktif</h3>
+              </div>
               <TopCustomersTable topCustomers={topCustomers} customers={customers} />
             </div>
             <div className="card">
-              <h3><i className="fas fa-truck" style={{ color: '#0D9488' }}></i> Top 10 Kurir Teraktif</h3>
+              <div className="card-header">
+                <h3><i className="fas fa-truck"></i> Top 10 Kurir Teraktif</h3>
+              </div>
               <TopKurirTable topKurir={topKurir} />
             </div>
           </div>
 
           <div className="superadmin-charts-grid">
             <div className="card">
-              <h3><i className="fas fa-clock"></i> 10 Order Terbaru</h3>
+              <div className="card-header">
+                <h3><i className="fas fa-clock"></i> 10 Order Terbaru</h3>
+              </div>
               <RecentOrdersTable orders={filteredOrders} />
             </div>
             <div className="card">
-              <h3><i className="fas fa-chart-simple"></i> Metrik Performa</h3>
+              <div className="card-header">
+                <h3><i className="fas fa-chart-simple"></i> Metrik Performa</h3>
+              </div>
               <MetricsTable metrics={metrics} />
             </div>
           </div>

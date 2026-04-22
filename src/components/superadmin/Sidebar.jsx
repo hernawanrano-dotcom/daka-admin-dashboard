@@ -1,10 +1,11 @@
 ﻿// apps/admin-dashboard/src/components/superadmin/Sidebar.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [expanded, setExpanded] = useState(!isOpen);
 
   const menuItems = [
     { id: 'dashboard', path: '/super-admin', icon: 'fas fa-tachometer-alt', label: 'Dashboard' },
@@ -27,20 +28,33 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <div className={`superadmin-sidebar ${isOpen ? 'open' : ''}`}>
-      <div className="logo">
-        <div className="logo-icon"><span>D</span></div>
-        <h2>DAKA <span>Express</span></h2>
-        <p>Super Admin</p>
+      <div className="sidebar-header">
+        <div className="logo">
+          <div className="logo-icon">
+            <i className="fas fa-shipping-fast"></i>
+          </div>
+          <h2>DAKA <span>Express</span></h2>
+        </div>
       </div>
-      <ul className="menu">
+      
+      <div className="sidebar-menu">
         {menuItems.map(item => (
-          <li key={item.id} className={isActive(item.path) ? 'active' : ''}>
-            <a onClick={() => handleClick(item.path)}>
-              <i className={item.icon}></i> {item.label}
-            </a>
-          </li>
+          <div
+            key={item.id}
+            className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
+            onClick={() => handleClick(item.path)}
+          >
+            <i className={item.icon}></i>
+            <span>{item.label}</span>
+          </div>
         ))}
-      </ul>
+      </div>
+
+      <div className="sidebar-footer">
+        <div className="version">
+          <small>v2.0.0</small>
+        </div>
+      </div>
     </div>
   );
 }
