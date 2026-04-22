@@ -1,7 +1,7 @@
-// apps/admin-dashboard/src/components/admincs/ChatList.jsx
+﻿// apps/admin-dashboard/src/components/admincs/ChatList.jsx
 import React from 'react';
 
-export default function ChatList({ chats, customers, currentCustomerId, onSelectChat, unreadCounts }) {
+export default function ChatList({ chats, customers, currentCustomerId, onSelectChat, unreadCounts, typingCustomers }) {
   const customerIds = [...new Set(chats.map(c => c.customerId))];
 
   if (customerIds.length === 0) {
@@ -15,6 +15,7 @@ export default function ChatList({ chats, customers, currentCustomerId, onSelect
         const customerChats = chats.filter(c => c.customerId === custId);
         const lastChat = customerChats[customerChats.length - 1];
         const unreadCount = unreadCounts[custId] || 0;
+        const isTyping = typingCustomers?.[custId] || false;
 
         return (
           <div
@@ -23,7 +24,10 @@ export default function ChatList({ chats, customers, currentCustomerId, onSelect
             onClick={() => onSelectChat(custId)}
           >
             <div className="chat-item-info">
-              <div className="chat-item-name">{customer?.name || 'Customer'}</div>
+              <div className="chat-item-name">
+                {customer?.name || 'Customer'}
+                {isTyping && <span style={{ fontSize: '0.6rem', marginLeft: '8px', color: '#f59e0b' }}>...</span>}
+              </div>
               <div className="chat-item-lastmsg">{lastChat?.message?.substring(0, 40) || '-'}</div>
             </div>
             <div style={{ textAlign: 'right' }}>

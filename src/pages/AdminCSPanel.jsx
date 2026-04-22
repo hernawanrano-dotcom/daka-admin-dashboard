@@ -1,13 +1,18 @@
-// apps/admin-dashboard/src/pages/AdminCSPanel.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+﻿// apps/admin-dashboard/src/pages/AdminCSPanel.jsx
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useOrders } from '../hooks/useOrders';
 import { chatAPI } from '../services/api';
+import io from 'socket.io-client';
 import LoginForm from '../components/admincs/LoginForm';
 import ChatList from '../components/admincs/ChatList';
 import ChatConversation from '../components/admincs/ChatConversation';
 import OrderTable from '../components/admincs/OrderTable';
 import OrderModal from '../components/admincs/OrderModal';
+
+// Socket connection
+const SOCKET_URL = 'https://zippy-commitment.up.railway.app';
+let socket;
 
 export default function AdminCSPanel() {
   const { isLoggedIn, adminName, login, logout, loading: authLoading } = useAuth();
@@ -18,6 +23,9 @@ export default function AdminCSPanel() {
   const [modalState, setModalState] = useState({ isOpen: false, type: null, order: null });
   const [loginError, setLoginError] = useState('');
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [liveChats, setLiveChats] = useState(chats);
+  const [typingCustomers, setTypingCustomers] = useState({});
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -27,15 +35,73 @@ export default function AdminCSPanel() {
     }
   }, [isLoggedIn, loadAllData]);
 
+  // Socket.io connection
+  useEffect(() => {
+    if (isLoggedIn && !socket) {
+      socket = io(SOCKET_URL);
+      
+      socket.emit('register', 'admin', 'admincs');
+      
+      socket.on('new_message', (data) => {
+        setLiveChats(prev => [...prev, {
+          customerId: data.customerId,
+          sender: 'customer',
+          message: data.message,
+          timestamp: new Date().toISOString()
+        }]);
+        
+        // Update unread count if not currently viewing this customer
+        if (currentCustomerId !== data.customerId) {
+          setUnreadCounts(prev => ({
+            ...prev,
+            [data.customerId]: (prev[data.customerId] || 0) + 1
+          }));
+        }
+      });
+      
+      socket.on('user_typing', (data) => {
+        setTypingCustomers(prev => ({
+          ...prev,
+          [data.customerId]: data.isTyping
+        }));
+        setTimeout(() => {
+          setTypingCustomers(prev => ({
+            ...prev,
+            [data.customerId]: false
+          }));
+        }, 1000);
+      });
+    }
+    
+    return () => {
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
+    };
+  }, [isLoggedIn, currentCustomerId]);
+
+  useEffect(() => {
+    setLiveChats(chats);
+  }, [chats]);
+
   useEffect(() => {
     const counts = {};
-    chats.forEach(chat => {
+    liveChats.forEach(chat => {
       if (chat.sender === 'customer' && !chat.read) {
-        counts[chat.customerId] = (counts[chat.customerId] || 0) + 1;
+        if (currentCustomerId !== chat.customerId) {
+          counts[chat.customerId] = (counts[chat.customerId] || 0) + 1;
+        }
       }
     });
     setUnreadCounts(counts);
-  }, [chats]);
+  }, [liveChats, currentCustomerId]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [liveChats, currentCustomerId]);
 
   const handleLogin = (email, password) => {
     const success = login(email, password);
@@ -46,22 +112,53 @@ export default function AdminCSPanel() {
   const handleLogout = () => {
     logout();
     setCurrentCustomerId(null);
+    if (socket) {
+      socket.disconnect();
+      socket = null;
+    }
   };
 
   const handleSelectChat = useCallback(async (customerId) => {
     setCurrentCustomerId(customerId);
-
-    const unreadChats = chats.filter(c => c.customerId === customerId && c.sender === 'customer' && !c.read);
+    
+    // Mark unread messages as read
+    const unreadChats = liveChats.filter(c => c.customerId === customerId && c.sender === 'customer' && !c.read);
     for (const chat of unreadChats) {
       await chatAPI.markRead(chat.id);
     }
+    
+    // Clear unread count for this customer
+    setUnreadCounts(prev => ({
+      ...prev,
+      [customerId]: 0
+    }));
+    
     await loadAllData();
-  }, [chats, loadAllData]);
+  }, [liveChats, loadAllData]);
 
   const handleSendMessage = async (message) => {
     if (!message || !currentCustomerId) return;
     await chatAPI.sendAdmin({ customerId: currentCustomerId, message });
+    
+    if (socket) {
+      socket.emit('send_message', {
+        customerId: currentCustomerId,
+        message,
+        sender: 'admincs'
+      });
+    }
+    
     await loadAllData();
+  };
+
+  const handleTyping = (isTyping) => {
+    if (socket && currentCustomerId) {
+      socket.emit('typing', {
+        customerId: currentCustomerId,
+        isTyping,
+        sender: 'admincs'
+      });
+    }
   };
 
   const getCurrentCustomer = () => {
@@ -69,7 +166,7 @@ export default function AdminCSPanel() {
   };
 
   const getCurrentCustomerChats = () => {
-    return chats.filter(c => c.customerId === currentCustomerId);
+    return liveChats.filter(c => c.customerId === currentCustomerId);
   };
 
   const getFilteredOrders = () => {
@@ -137,6 +234,9 @@ export default function AdminCSPanel() {
   }
 
   const filteredOrders = getFilteredOrders();
+  const currentCustomer = getCurrentCustomer();
+  const currentChats = getCurrentCustomerChats();
+  const isCustomerTyping = currentCustomerId ? typingCustomers[currentCustomerId] : false;
 
   return (
     <div className="admin-container" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -173,11 +273,12 @@ export default function AdminCSPanel() {
         <div className="chat-list">
           <div className="chat-list-header"><i className="fas fa-comments"></i> Chat</div>
           <ChatList
-            chats={chats}
+            chats={liveChats}
             customers={customers}
             currentCustomerId={currentCustomerId}
             onSelectChat={handleSelectChat}
             unreadCounts={unreadCounts}
+            typingCustomers={typingCustomers}
           />
         </div>
 
@@ -187,9 +288,12 @@ export default function AdminCSPanel() {
           {currentCustomerId ? (
             <div className="chat-conversation-area" style={{ display: 'flex', flexDirection: 'column', height: '50%' }}>
               <ChatConversation
-                customer={getCurrentCustomer()}
-                chats={getCurrentCustomerChats()}
+                customer={currentCustomer}
+                chats={currentChats}
                 onSendMessage={handleSendMessage}
+                onTyping={handleTyping}
+                isTyping={isCustomerTyping}
+                messagesEndRef={messagesEndRef}
               />
             </div>
           ) : (

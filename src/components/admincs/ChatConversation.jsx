@@ -1,13 +1,9 @@
-// apps/admin-dashboard/src/components/admincs/ChatConversation.jsx
+﻿// apps/admin-dashboard/src/components/admincs/ChatConversation.jsx
 import React, { useState, useRef, useEffect } from 'react';
 
-export default function ChatConversation({ customer, chats, onSendMessage }) {
+export default function ChatConversation({ customer, chats, onSendMessage, onTyping, isTyping, messagesEndRef }) {
   const [message, setMessage] = useState('');
-  const messagesEndRef = useRef(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chats]);
+  const typingTimeoutRef = useRef(null);
 
   const handleSend = () => {
     if (!message.trim()) return;
@@ -16,7 +12,17 @@ export default function ChatConversation({ customer, chats, onSendMessage }) {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSend();
+    if (e.key === 'Enter') {
+      handleSend();
+    } else {
+      if (onTyping) {
+        onTyping(true);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => {
+          onTyping(false);
+        }, 1000);
+      }
+    }
   };
 
   if (!customer) return null;
@@ -25,6 +31,7 @@ export default function ChatConversation({ customer, chats, onSendMessage }) {
     <>
       <div className="chat-conversation-header">
         <i className="fas fa-user"></i> {customer.name}
+        {isTyping && <span style={{ fontSize: '0.7rem', marginLeft: '10px', color: '#f59e0b' }}>Sedang mengetik...</span>}
       </div>
       <div className="chat-messages">
         {chats.map((chat, idx) => (
