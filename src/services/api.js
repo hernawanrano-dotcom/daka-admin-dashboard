@@ -1,5 +1,5 @@
 // apps/admin-dashboard/src/services/api.js
-const API_BASE = 'https://zippy-commitment.up.railway.app/api';
+const API_BASE = 'https://zippy-commitment-production-dfeb.up.railway.app/api';
 export async function fetchAPI(url, options = {}) {
   try {
     const res = await fetch(`${API_BASE}${url}`, {
