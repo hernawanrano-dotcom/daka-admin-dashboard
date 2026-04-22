@@ -1,0 +1,368 @@
+/* apps/admin-dashboard/src/styles/adminkeuangan.css */
+
+.keuangan-dashboard {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.keuangan-sidebar {
+  width: 280px;
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: all 0.3s;
+  z-index: 100;
+}
+
+.keuangan-sidebar .logo {
+  padding: 24px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.keuangan-sidebar .logo .logo-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0D9488 0%, #F59E0B 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.keuangan-sidebar .logo .logo-icon span {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: white;
+}
+
+.keuangan-sidebar .logo h2 {
+  font-size: 1.4rem;
+}
+
+.keuangan-sidebar .logo h2 span {
+  color: #F59E0B;
+}
+
+.keuangan-sidebar .logo p {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+.keuangan-sidebar .menu {
+  list-style: none;
+  padding: 20px 16px;
+}
+
+.keuangan-sidebar .menu li {
+  margin-bottom: 8px;
+}
+
+.keuangan-sidebar .menu a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  color: #cbd5e1;
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.keuangan-sidebar .menu a:hover {
+  background: rgba(13, 148, 136, 0.2);
+  color: #0D9488;
+}
+
+.keuangan-sidebar .menu .active a {
+  background: #0D9488;
+  color: white;
+}
+
+/* MAIN CONTENT */
+.keuangan-main-content {
+  margin-left: 280px;
+  min-height: 100vh;
+  flex: 1;
+}
+
+.keuangan-top-bar {
+  background: white;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.keuangan-top-bar .page-title h2 {
+  font-size: 1.3rem;
+  color: #0D9488;
+}
+
+.keuangan-top-bar .page-title p {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.keuangan-main-container {
+  padding: 24px 32px;
+}
+
+/* STATS GRID */
+.keuangan-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.keuangan-stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.keuangan-stat-card:hover {
+  transform: translateY(-3px);
+}
+
+.keuangan-stat-card .stat-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keuangan-stat-card .stat-icon i {
+  font-size: 1.5rem;
+}
+
+.keuangan-stat-card .stat-info h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.keuangan-stat-card .stat-info p {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* CARD */
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card h3 {
+  margin-bottom: 16px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* FILTER BAR */
+.filter-bar {
+  background: white;
+  border-radius: 20px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
+  background: #f1f5f9;
+}
+
+.filter-btn.active {
+  background: #0D9488;
+  color: white;
+}
+
+/* STATUS BADGES */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-paid {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-unpaid {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+/* BUTTONS */
+.btn-sm {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-warning {
+  background: #F59E0B;
+  color: white;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-excel {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.btn-pdf {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+th, td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+/* MENU TOGGLE */
+.keuangan-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: #0D9488;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  z-index: 101;
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .keuangan-menu-toggle {
+    display: block;
+  }
+  
+  .keuangan-sidebar {
+    left: -280px;
+  }
+  
+  .keuangan-sidebar.open {
+    left: 0;
+  }
+  
+  .keuangan-main-content {
+    margin-left: 0;
+  }
+  
+  .keuangan-main-container {
+    padding: 16px;
+  }
+  
+  .keuangan-stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* DARK MODE */
+body.dark-mode .keuangan-top-bar,
+body.dark-mode .keuangan-stat-card,
+body.dark-mode .card {
+  background: #1e293b;
+}
+
+body.dark-mode .keuangan-top-bar .page-title p,
+body.dark-mode .keuangan-stat-card .stat-info p {
+  color: #94a3b8;
+}
+
+body.dark-mode th {
+  background: #334155;
+  color: #f1f5f9;
+}
+
+body.dark-mode td {
+  border-bottom-color: #334155;
+}
